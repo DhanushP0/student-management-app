@@ -82,10 +82,9 @@ Replace [platform] with ios, apk, web, etc.
 3. Make your changes
 4. Submit a pull request
 
-## License
-
-[Add your license information here]
-
 ## Contact
 
-[Add your contact information here]
+1. **Email:** [dhanushp3542@gmail.com](dhanushp3542@gmail.com)  
+3. **GitHub:** [DhanushP0](https://github.com/DhanushP0)  
+
+
