@@ -84,7 +84,7 @@ Replace [platform] with ios, apk, web, etc.
 
 ## Contact
 
-1. **Email:** [dhanushp](dhanushp3542@gmail.com)  
-2. **GitHub:** [DhanushP0](https://github.com/DhanushP0)  
+1. **Email:** [dhanushp3542@gmail.com](dhanushp3542@gmail.com)  
+3. **GitHub:** [DhanushP0](https://github.com/DhanushP0)  
 
 
