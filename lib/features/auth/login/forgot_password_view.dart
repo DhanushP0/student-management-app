@@ -92,36 +92,46 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back button
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => context.go('/login'),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.chevron_left,
-                      color: CupertinoColors.systemBlue,
-                      size: 20,
-                    ),
-                  ),
-                ),
+ child: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    // 🔙 Back button stays at the top
+    Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: () => context.go('/login'),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
+            ],
+          ),
+          child: const Icon(
+            CupertinoIcons.chevron_left,
+            color: CupertinoColors.systemBlue,
+            size: 20,
+          ),
+        ),
+      ),
+    ),
+        const SizedBox(height: 40),
+
+    // 🖼️ Image at the bottom
+    Center(
+      child: Image.asset(
+        'assets/images/image2.png',
+        height: 300,
+        fit: BoxFit.contain,
+      ),
+    ),
 
               const SizedBox(height: 40),
 
