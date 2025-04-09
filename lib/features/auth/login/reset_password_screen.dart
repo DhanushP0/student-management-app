@@ -190,11 +190,39 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   Widget backButton(BuildContext context) {
+    Future<bool> _showExitConfirmationDialog() async {
+      return await showCupertinoDialog<bool>(
+            context: context,
+            builder:
+                (context) => CupertinoAlertDialog(
+                  title: const Text('Are you sure?'),
+                  content: const Text(
+                    'Your password reset progress will be lost.',
+                  ),
+                  actions: [
+                    CupertinoDialogAction(
+                      child: const Text('Cancel'),
+                      onPressed: () => Navigator.pop(context, false),
+                    ),
+                    CupertinoDialogAction(
+                      isDestructiveAction: true,
+                      child: const Text('Leave'),
+                      onPressed: () {
+                        Navigator.pop(context, true);
+                        context.go('/login'); // Navigate to login page
+                      },
+                    ),
+                  ],
+                ),
+          ) ??
+          false;
+    }
+
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: CupertinoButton(
         padding: EdgeInsets.zero,
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: _showExitConfirmationDialog,
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(

@@ -19,6 +19,29 @@ class _LoginScreenState extends State<LoginScreen> {
   String? error;
 
   Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    // Email empty validation
+    if (email.isEmpty) {
+      setState(() => error = 'Please enter your email address');
+      return;
+    }
+
+    // Password empty validation
+    if (password.isEmpty) {
+      setState(() => error = 'Please enter your password');
+      return;
+    }
+
+    // Email format validation
+    final emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
+    if (!emailRegex.hasMatch(email)) {
+      setState(() => error = 'Please enter a valid email address');
+      return;
+    }
+
+    // Clear any previous error
     setState(() => error = null);
 
     showCupertinoDialog(
@@ -28,10 +51,29 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     try {
+      // First check if email exists in database
+      final emailCheck =
+          await Supabase.instance.client
+              .from('profiles')
+              .select()
+              .eq('email', email)
+              .maybeSingle();
+
+      if (emailCheck == null) {
+        if (mounted) {
+          Navigator.of(context).pop(); // Dismiss loader
+          setState(() => error = 'No account found with this email address');
+        }
+        return;
+      }
+
+      // If email exists, attempt login
       final authRes = await Supabase.instance.client.auth.signInWithPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+        email: email,
+        password: password,
       );
+
+      // ...rest of the login logic...
 
       final user = authRes.user;
       if (user != null) {
@@ -44,14 +86,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final roleName = response['roles']['name'];
         if (!mounted) return;
-        Navigator.of(context).pop(); // Remove loading
+        Navigator.of(context).pop(); // Dismiss loader
         _navigateBasedOnRole(roleName, context);
       }
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop();
-        setState(() => error = e.toString().replaceAll('Exception: ', ''));
+        setState(() => error = _getFriendlyErrorMessage(e.toString()));
       }
+    }
+  }
+
+  String _getFriendlyErrorMessage(String error) {
+    if (error.contains('Invalid login credentials')) {
+      return 'Incorrect password. Please try again.';
+    } else if (error.contains('network error')) {
+      return 'Network error. Please check your internet connection.';
+    } else {
+      return 'An unexpected error occurred. Please try again.';
     }
   }
 
