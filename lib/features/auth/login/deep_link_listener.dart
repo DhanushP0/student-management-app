@@ -24,12 +24,10 @@ class _DeepLinkListenerState extends State<DeepLinkListener> {
     _handleInitialUri();
     _listenToIncomingLinks();
 
-    // ✅ Just log the event — don't navigate manually here
     _sub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       if (event == AuthChangeEvent.passwordRecovery) {
-        debugPrint('🟡 Auth event: $event');
-        // DO NOT navigate manually here — rely on URI listener
+        // Password recovery event handled
       }
     });
   }
@@ -37,10 +35,9 @@ class _DeepLinkListenerState extends State<DeepLinkListener> {
   Future<void> _handleInitialUri() async {
     try {
       final uri = await getInitialUri();
-      debugPrint('🌐 Initial URI: $uri');
       if (uri != null) _processUri(uri);
     } catch (e) {
-      debugPrint('❌ Error handling initial URI: $e');
+      // Handle error silently
     }
   }
 
@@ -50,14 +47,12 @@ class _DeepLinkListenerState extends State<DeepLinkListener> {
         if (uri != null) _processUri(uri);
       },
       onError: (err) {
-        debugPrint('🚨 uriLinkStream error: $err');
+        // Handle error silently
       },
     );
   }
 
   void _processUri(Uri uri) {
-    debugPrint('🔗 Incoming URI: $uri');
-
     if (_handled || !uri.toString().contains('reset-password')) return;
 
     final fragmentParams = Uri.splitQueryString(uri.fragment);
@@ -65,8 +60,6 @@ class _DeepLinkListenerState extends State<DeepLinkListener> {
 
     if (refreshToken != null && refreshToken.isNotEmpty) {
       _showResetPasswordDialog(refreshToken);
-    } else {
-      debugPrint('⚠️ No refresh_token found in URI fragment');
     }
   }
 
@@ -78,26 +71,23 @@ class _DeepLinkListenerState extends State<DeepLinkListener> {
       if (context != null) {
         showCupertinoDialog(
           context: context,
-          builder:
-              (_) => CupertinoAlertDialog(
-                title: const Text('Reset Password'),
-                content: const Text('Do you want to reset your password now?'),
-                actions: [
-                  CupertinoDialogAction(
-                    child: const Text('Cancel'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  CupertinoDialogAction(
-                    child: const Text('Reset'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      GoRouter.of(
-                        context,
-                      ).go('/reset-password?refresh_token=$refreshToken');
-                    },
-                  ),
-                ],
+          builder: (_) => CupertinoAlertDialog(
+            title: const Text('Reset Password'),
+            content: const Text('Do you want to reset your password now?'),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
               ),
+              CupertinoDialogAction(
+                child: const Text('Reset'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  GoRouter.of(context).go('/reset-password?refresh_token=$refreshToken');
+                },
+              ),
+            ],
+          ),
         );
       }
     });

@@ -21,8 +21,18 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   bool _canResendEmail = false;
 
   Future<void> _resetPassword() async {
-    if (_emailController.text.isEmpty) {
+    final email = _emailController.text.trim();
+
+    // Email empty validation
+    if (email.isEmpty) {
       setState(() => _errorMessage = 'Please enter your email address');
+      return;
+    }
+
+    // Email format validation
+    final emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
+    if (!emailRegex.hasMatch(email)) {
+      setState(() => _errorMessage = 'Please enter a valid email address');
       return;
     }
 
@@ -42,40 +52,75 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     );
 
     try {
-      await Supabase.instance.client.auth.resetPasswordForEmail(
-        _emailController.text.trim(),
-      );
+      // Check if email exists in database
+      final response =
+          await Supabase.instance.client
+              .from('profiles')
+              .select()
+              .eq('email', email)
+              .maybeSingle();
 
-      if (mounted) {
-        Navigator.of(context).pop(); // Dismiss dialog
-        setState(() {
-          _isLoading = false;
-          _successMessage =
-              'Password reset instructions have been sent to your email';
-          _canResendEmail = false;
-        });
-        // Start cooldown timer
-        Future.delayed(const Duration(seconds: 10), () {
-          if (mounted) {
-            setState(() => _canResendEmail = true);
-          }
-        });
+      if (response == null) {
+        // Email not found in database
+        if (mounted) {
+          Navigator.of(context).pop(); // Dismiss loader
+          showCupertinoDialog(
+            context: context,
+            builder:
+                (context) => CupertinoAlertDialog(
+                  title: const Text('Email Not Registered'),
+                  content: const Text(
+                    'This email is not registered. Would you like to create an account?',
+                  ),
+                  actions: [
+                    CupertinoDialogAction(
+                      child: const Text('Cancel'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    CupertinoDialogAction(
+                      isDefaultAction: true,
+                      child: const Text('Sign Up'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context.go('/signup');
+                      },
+                    ),
+                  ],
+                ),
+          );
+        }
+      } else {
+        // Email exists, proceed with password reset
+        await Supabase.instance.client.auth.resetPasswordForEmail(email);
+
+        if (mounted) {
+          Navigator.of(context).pop(); // Dismiss loader
+          setState(() {
+            _successMessage =
+                'Password reset instructions have been sent to your email';
+            _canResendEmail = false;
+          });
+          // Start cooldown timer
+          Future.delayed(const Duration(seconds: 10), () {
+            if (mounted) {
+              setState(() => _canResendEmail = true);
+            }
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop();
         setState(() {
-          _isLoading = false;
-          _errorMessage = e.toString();
+          _errorMessage = 'An error occurred. Please try again later.';
         });
       }
     } finally {
-      if (mounted && Navigator.canPop(context)) {
-        Navigator.of(context).pop();
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
